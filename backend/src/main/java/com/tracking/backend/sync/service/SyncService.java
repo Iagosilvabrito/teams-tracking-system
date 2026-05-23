@@ -105,7 +105,8 @@ public class SyncService {
                                 agent.getId(), external.recordedAt()
                         );
                         if (!exists) {
-                            if (external.accuracy() == null || external.accuracy() <= 100) {
+                            if (external.lat() != null && external.lng() != null &&
+                                    (external.accuracy() == null || external.accuracy() <= 100)) {
                                 Location location = new Location();
                                 location.setAgent(agent);
                                 location.setLat(external.lat());

@@ -21,7 +21,7 @@ public class GpsApiClient {
     public AgentPageResponse getAgents(int page, String syncToken) {
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/api/agents")
+                        .path("/api/v1/agents")
                         .queryParam("page", page)
                         .queryParamIfPresent("syncToken", java.util.Optional.ofNullable(syncToken))
                         .build())
@@ -36,7 +36,7 @@ public class GpsApiClient {
     public AgentLocationPageResponse getLocations(int page, String syncToken) {
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/api/locations")
+                        .path("/api/v1/locations")
                         .queryParam("page", page)
                         .queryParamIfPresent("syncToken", java.util.Optional.ofNullable(syncToken))
                         .build())
