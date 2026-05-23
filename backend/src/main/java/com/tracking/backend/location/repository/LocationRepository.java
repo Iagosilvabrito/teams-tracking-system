@@ -1,6 +1,6 @@
-package com.tracking.backend.Location.repository;
+package com.tracking.backend.location.repository;
 
-import com.tracking.backend.Location.entity.Location;
+import com.tracking.backend.location.entity.Location;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.time.LocalDateTime;
 import java.util.List;

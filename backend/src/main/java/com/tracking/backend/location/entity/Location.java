@@ -1,4 +1,4 @@
-package com.tracking.backend.Location.entity;
+package com.tracking.backend.location.entity;
 
 import com.tracking.backend.agent.entity.Agent;
 import jakarta.persistence.*;
