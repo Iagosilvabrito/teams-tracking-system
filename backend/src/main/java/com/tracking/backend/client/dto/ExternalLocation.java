@@ -1,7 +1,5 @@
 package com.tracking.backend.client.dto;
 
-import java.time.LocalDateTime;
-
 public record ExternalLocation(
         String agentId,
         Double latitude,
@@ -11,6 +9,5 @@ public record ExternalLocation(
         Double speed,
         Integer battery,
         String status,
-        String lastSeen,
-        LocalDateTime recordedAt
+        String lastSeen
 ) {}

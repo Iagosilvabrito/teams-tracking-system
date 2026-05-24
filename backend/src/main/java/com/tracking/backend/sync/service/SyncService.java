@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 @Slf4j
@@ -40,14 +41,11 @@ public class SyncService {
         syncLogRepository.save(syncLog);
 
         try {
-            int page = 0;
             int processed = 0;
             String syncToken = syncTokenStore.getToken("AGENT_SYNC");
 
-            while (true) {
-                AgentPageResponse response = gpsApiClient.getAgents(page, syncToken);
-                if (response == null || response.data().isEmpty()) break;
-
+            AgentPageResponse response = gpsApiClient.getAgents(0, syncToken);
+            if (response != null && !response.data().isEmpty()) {
                 for (ExternalAgent external : response.data()) {
                     Optional<Agent> existing = agentRepository.findByExternalId(external.id());
                     if (existing.isPresent()) {
@@ -58,13 +56,6 @@ public class SyncService {
                     }
                     processed++;
                 }
-
-                if (response.syncToken() != null) {
-                    syncTokenStore.saveToken("AGENT_SYNC", response.syncToken());
-                }
-
-                if (page >= response.totalPages() - 1) break;
-                page++;
             }
 
             syncLog.setStatus(SyncStatus.SUCCESS);
@@ -86,41 +77,35 @@ public class SyncService {
         syncLogRepository.save(syncLog);
 
         try {
-            int page = 0;
             int processed = 0;
             String syncToken = syncTokenStore.getToken("POSITION_SYNC");
 
-            while (true) {
-                AgentLocationPageResponse response = gpsApiClient.getLocations(page, syncToken);
-                if (response == null || response.data().isEmpty()) break;
-
+            AgentLocationPageResponse response = gpsApiClient.getLocations(0, syncToken);
+            if (response != null && !response.data().isEmpty()) {
                 for (ExternalLocation external : response.data()) {
                     agentRepository.findByExternalId(external.agentId()).ifPresent(agent -> {
-                        boolean exists = locationRepository.existsByAgentIdAndRecordedAt(
-                                agent.getId(), external.recordedAt()
-                        );
+                        LocalDateTime lastSeen = external.lastSeen() != null
+                                ? OffsetDateTime.parse(external.lastSeen()).toLocalDateTime()
+                                : null;
+
+                        boolean exists = lastSeen != null && locationRepository
+                                .existsByAgentIdAndRecordedAt(agent.getId(), lastSeen);
+
                         if (!exists) {
                             if (external.latitude() != null && external.longitude() != null &&
                                     (external.accuracy() == null || external.accuracy() <= 50)) {
-                                Location location = ExternalLocationMapper.toEntity(external, agent);
+                                Location location = ExternalLocationMapper.toEntity(external, agent, lastSeen);
                                 locationRepository.save(location);
 
                                 agent.setCurrentLat(external.latitude());
                                 agent.setCurrentLng(external.longitude());
-                                agent.setLastSeenAt(external.recordedAt());
+                                agent.setLastSeenAt(lastSeen);
                                 agentRepository.save(agent);
                             }
                         }
                     });
                     processed++;
                 }
-
-                if (response.syncToken() != null) {
-                    syncTokenStore.saveToken("POSITION_SYNC", response.syncToken());
-                }
-
-                if (page >= response.totalPages() - 1) break;
-                page++;
             }
 
             syncLog.setStatus(SyncStatus.SUCCESS);
