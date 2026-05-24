@@ -2,12 +2,13 @@ package com.tracking.backend.sync.service;
 
 import com.tracking.backend.agent.entity.Agent;
 import com.tracking.backend.agent.repository.AgentRepository;
-import com.tracking.backend.agent.entity.AgentStatus;
 import com.tracking.backend.client.GpsApiClient;
 import com.tracking.backend.client.dto.AgentPageResponse;
 import com.tracking.backend.client.dto.AgentLocationPageResponse;
 import com.tracking.backend.client.dto.ExternalAgent;
+import com.tracking.backend.client.mapper.ExternalAgentMapper;
 import com.tracking.backend.client.dto.ExternalLocation;
+import com.tracking.backend.client.mapper.ExternalLocationMapper;
 import com.tracking.backend.location.entity.Location;
 import com.tracking.backend.location.repository.LocationRepository;
 import com.tracking.backend.sync.SyncTokenStore;
@@ -50,16 +51,10 @@ public class SyncService {
                 for (ExternalAgent external : response.data()) {
                     Optional<Agent> existing = agentRepository.findByExternalId(external.id());
                     if (existing.isPresent()) {
-                        Agent agent = existing.get();
-                        agent.setName(external.name());
-                        agent.setStatus("ACTIVE".equals(external.status()) ? AgentStatus.ACTIVE : AgentStatus.INACTIVE);
-                        agentRepository.save(agent);
+                        ExternalAgentMapper.updateEntity(existing.get(), external);
+                        agentRepository.save(existing.get());
                     } else {
-                        Agent agent = new Agent();
-                        agent.setExternalId(external.id());
-                        agent.setName(external.name());
-                        agent.setStatus("ACTIVE".equals(external.status()) ? AgentStatus.ACTIVE : AgentStatus.INACTIVE);
-                        agentRepository.save(agent);
+                        agentRepository.save(ExternalAgentMapper.toEntity(external));
                     }
                     processed++;
                 }
@@ -105,18 +100,13 @@ public class SyncService {
                                 agent.getId(), external.recordedAt()
                         );
                         if (!exists) {
-                            if (external.lat() != null && external.lng() != null &&
-                                    (external.accuracy() == null || external.accuracy() <= 100)) {
-                                Location location = new Location();
-                                location.setAgent(agent);
-                                location.setLat(external.lat());
-                                location.setLng(external.lng());
-                                location.setAccuracy(external.accuracy());
-                                location.setRecordedAt(external.recordedAt());
+                            if (external.latitude() != null && external.longitude() != null &&
+                                    (external.accuracy() == null || external.accuracy() <= 50)) {
+                                Location location = ExternalLocationMapper.toEntity(external, agent);
                                 locationRepository.save(location);
 
-                                agent.setCurrentLat(external.lat());
-                                agent.setCurrentLng(external.lng());
+                                agent.setCurrentLat(external.latitude());
+                                agent.setCurrentLng(external.longitude());
                                 agent.setLastSeenAt(external.recordedAt());
                                 agentRepository.save(agent);
                             }

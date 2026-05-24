@@ -13,7 +13,7 @@ public class PositionSyncScheduler {
 
     private final SyncService syncService;
 
-    @Scheduled(fixedRate = 30000) // a cada 30 segundos
+    @Scheduled(fixedRate = 30000)
     public void sync() {
         log.info("Iniciando sincronização de posições...");
         syncService.syncLocations();
