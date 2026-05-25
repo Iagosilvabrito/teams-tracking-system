@@ -16,6 +16,9 @@ public class SyncLog {
     @Column(name = "sync_type", nullable = false)
     private String syncType;
 
+    @Column(name = "sync_token")
+    private String syncToken;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SyncStatus status;

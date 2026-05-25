@@ -4,7 +4,7 @@ import java.util.List;
 
 public record AgentPageResponse(
         List<ExternalAgent> data,
-        int page,
-        int totalPages,
+        Integer page,
+        Integer totalPages,
         String syncToken
 ) {}

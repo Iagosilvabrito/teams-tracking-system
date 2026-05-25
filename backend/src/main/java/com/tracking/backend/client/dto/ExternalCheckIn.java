@@ -1,8 +1,6 @@
-package com.tracking.backend.checkin.dto;
+package com.tracking.backend.client.dto;
 
-import java.time.LocalDateTime;
-
-public record CheckInResponse(
+public record ExternalCheckIn(
         String id,
         String agentId,
         String type,
@@ -15,6 +13,6 @@ public record CheckInResponse(
         String notes,
         Double distanceFromPrevious,
         String externalEventId,
-        LocalDateTime occurredAt,
-        LocalDateTime syncedAt
+        String occurredAt,
+        String syncedAt
 ) {}

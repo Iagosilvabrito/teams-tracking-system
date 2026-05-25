@@ -10,4 +10,5 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
             Long agentId, LocalDateTime start, LocalDateTime end
     );
     boolean existsByAgentIdAndRecordedAt(Long agentId, LocalDateTime recordedAt);
+    void deleteByAgentId(Long agentId);
 }
